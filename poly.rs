@@ -1,5 +1,6 @@
 // `libpoly.rs`
 #![feature(globs)]
+#![feature(macro_rules)]
 #![crate_id = "poly#0.1"]
 #![comment = "A Musical Instrument for Computers "]
 #![license = "MIT"]
@@ -8,6 +9,13 @@
 extern crate libc;
 
 use libc::*;
+
+macro_rules! unsafe_return(
+    ($func:expr $rett:ty) => (
+        unsafe { $func as $rett}
+    )
+)
+
 
 #[allow(non_camel_case_types)]
 #[repr(C)]
@@ -106,12 +114,17 @@ impl Poly {
         }
         self.started
     }
-
     pub fn stop(&mut self) {
         unsafe {
             poly_stop();
         }
         self.started = false;
+    }
+    pub fn init_generator(&self, index: int, wavetype: poly_wavetype, amplitude: f64, freq: f64) {
+        unsafe {
+            poly_init_generator(index as c_int, wavetype, amplitude as c_float,
+                freq as c_float)
+        }
     }
 
     pub fn get_init(&self, index: int) -> ~str {
@@ -126,17 +139,72 @@ impl Poly {
             poly_get_wavetype(index as c_int)
         }
     }
+    pub fn get_L_amp(&self, index: int) -> f64 {
+        unsafe_return!(poly_get_L_amp(index as c_int) f64)
+    }
+    pub fn get_R_amp(&self, index: int) -> f64 {
+        unsafe_return!(poly_get_R_amp(index as c_int) f64)
+    }
+    pub fn get_phase(&self, index: int) -> f64 {
+        unsafe_return!(poly_get_phase(index as c_int) f64)
+    }
+    pub fn get_duty(&self, index: int) -> f64 {
+        unsafe_return!(poly_get_duty(index as c_int) f64)
+    }
+    pub fn get_sample_bitdepth(&self, index: int) -> int {
+        unsafe_return!(poly_get_sample_bitdepth(index as c_int) int)
+    }
+    pub fn get_sample_length(&self, index: int) -> int {
+        unsafe_return!(poly_get_sample_length(index as c_int) int)
+    }
+    pub fn get_sample(&self, index: int) -> ~str {
+        let result = unsafe {
+            poly_get_sample(index as c_int)
+        };
+        result.to_str()
+    }
+
+    pub fn mute(&self, index: int) {
+        unsafe { poly_mute(index as c_int) }
+    }
+    pub fn unmute(&self, index: int) {
+        unsafe { poly_unmute(index as c_int) }
+    }
 
     pub fn set_wavetype(&self, index: int, wavetype: poly_wavetype) {
         unsafe {
             poly_set_wavetype(index as c_int, wavetype)
         }
     }
-
-    pub fn init_generator(&self, index: int, wavetype: poly_wavetype, amplitute: f64, freq: f64) {
-        unsafe {
-            poly_init_generator(index as c_int, wavetype, amplitute as c_float, freq as c_float)
-        }
+    pub fn set_amplitude(&self, index: int, amplitude: f64) {
+        unsafe { poly_set_amplitude(index as c_int, amplitude as c_float) }
+    }
+    pub fn set_L_amp(&self, index: int, l_amp: f64) {
+        unsafe { poly_set_L_amp(index as c_int, l_amp as c_float) }
+    }
+    pub fn set_R_amp(&self, index: int, r_amp: f64) {
+        unsafe { poly_set_R_amp(index as c_int, r_amp as c_float) }
+    }
+    pub fn bump_freq(&self, index: int, freq: f64) {
+        unsafe { poly_bump_freq(index as c_int, freq as c_float) }
+    }
+    pub fn set_freq(&self, index: int, freq: f64) {
+        unsafe { poly_set_freq(index as c_int, freq as c_float) }
+    }
+    pub fn set_phase(&self, index: int, phase: f64) {
+        unsafe { poly_set_phase(index as c_int, phase as c_float)}
+    }
+    pub fn set_duty(&self, index: int, duty: f64) {
+        unsafe { poly_set_duty(index as c_int, duty as c_float) }
+    }
+    pub fn set_sample_bitdepth(&self, index: int, sample_bitdepth: int) {
+        unsafe { poly_set_sample_bitdepth(index as c_int, sample_bitdepth as c_int) }
+    }
+    pub fn set_sample_length(&self, index: int, sample_length: int) {
+        unsafe { poly_set_sample_length(index as c_int, sample_length as c_int) }
+    }
+    pub fn set_sample(&self, index: int, sample: &str) {
+        unsafe{ poly_set_sample(index as c_int, sample.to_c_str().unwrap()) }
     }
 }
 
